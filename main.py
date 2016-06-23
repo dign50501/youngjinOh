@@ -345,13 +345,12 @@ class FriendRBTree(RBtree):
     def counting(self, x=None):
         count = 0
         if x is None:
-            count = 0
             x = self.Root
         if x != self.nil:
-            count += x.key
-            self.counting(x.left)
-            self.counting(x.right)
+            count = x.key + self.counting(x.left) + self.counting(x.right)
         return count
+
+
 
 
 class WordRBTree(RBtree):
@@ -454,19 +453,20 @@ def main():
         print(""" from a given user
 99. Quit
 Select Menu: """, end='')
-
+        # friend number in red blakc tree
+        alpha = FriendRBTree()
+        alpha = alpha.rearrange_by_friend(user_tree, alpha)
+        count = alpha.counting()
         number = input()
         print()
 
         if number == '0':
             print("Total users: %d" % user_tree.num_of_users)
-            print("Total friendship records: ")
+            print("Total friendship records: %d" % count)
             print("Total tweets: %d" % word_tree.num_of_words)
         elif number == '1':
-            alpha = FriendRBTree()
-            alpha = alpha.rearrange_by_friend(user_tree, alpha)
-            count = alpha.counting()
-            print("Average number of friends: %d" % count)
+
+            print("Average number of friends: %f" % (count / user_tree.num_of_users))
             print("Minimum number of Friends: %d" % alpha.minimum().key)
             print("Maximum number of friends: %d" % alpha.maximum().key)
             print()
