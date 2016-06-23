@@ -390,11 +390,10 @@ Select Menu: """, end='')
             print("Who tweeted the input word? ", end='')
             sen = input()
             word_node = word_tree.search(sen)
-            if word_node is not word_tree.nil:
+            if word_node is not word_tree.nil and word_node is not None:
                 print("People who tweeted: ", end='')
                 for person in word_node.user:
                     x = user_tree.search(person)
-
                     print(x.user_name, end=' ')
                 print()
             else:
@@ -424,20 +423,17 @@ Select Menu: """, end='')
             input_word = input()
             del_node = word_tree.search(input_word)
             if del_node is not word_tree.nil:
-                for person in del_node.user:
-                    z = user_tree.search(person)
-                    print(z.user_name)
-                    print(z.key)
-                    for i in z.word:
-                        k = word_tree.search(i)
-                        if z.key in k.user:
-                            k.del_user(z.key)
-                    print(del_node.user)
-
-                    #user_tree.delete_node(z)
-                #word_tree.delete_node(del_node)
-                #word_node = None
-
+                while del_node.user:
+                    for person in del_node.user:
+                        z = user_tree.search(person)
+                        for i in z.word:
+                            k = word_tree.search(i)
+                            if z.key in k.user:
+                                k.del_user(z.key)
+                                if not k.user:
+                                    word_tree.delete_node(k)
+                        user_tree.delete_node(z)
+                word_node = None
             else:
                 print("Nothing to delete!")
         elif number == 8:
