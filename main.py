@@ -428,13 +428,16 @@ Select Menu: """, end='')
                     z = user_tree.search(person)
                     print(z.user_name)
                     print(z.key)
-                    for item in z.word:
-                        k = word_tree.search(item)
-                        k.del_user(268885242)
-                    user_tree.delete_node(z)
+                    for i in z.word:
+                        k = word_tree.search(i)
+                        if z.key in k.user:
+                            k.del_user(z.key)
+                    print(del_node.user)
 
-                word_tree.delete_node(del_node)
-                word_node = None
+                    #user_tree.delete_node(z)
+                #word_tree.delete_node(del_node)
+                #word_node = None
+
             else:
                 print("Nothing to delete!")
         elif number == 8:
