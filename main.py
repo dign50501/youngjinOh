@@ -64,6 +64,16 @@ class UserRBNode(RBNode):
         return len(self._word)
 
 
+class FriendRBNode(RBNode):
+    def __init__(self, num_of_friends, user_id, user_name):
+        RBNode.__init__(self, num_of_friends)
+        self._user_id = user_id
+        self._user_name = user_name
+
+    user_name = property(fget=lambda self: self._user_name)
+    user_id = property(fget=lambda self: self._user_id)
+
+
 class WordRBNode(RBNode):
 
     def __init__(self, word):
@@ -93,6 +103,14 @@ class RBtree:
 
     nil = property(fget=lambda self: self._nil)
     Root = property(fget=lambda self: self._root)
+
+    def in_order_walk(self, x=None):
+        if x is None:
+            x = self.Root
+        if x != self.nil:
+            self.in_order_walk(x.left)
+            print(x.key)
+            self.in_order_walk(x.right)
 
     def search(self, k, x=None):
         if x is None:  # fix when problem occurs
@@ -201,10 +219,19 @@ class RBtree:
 
     def minimum(self, x=None):
         if x is None:
-            x = self.root
+            x = self.Root
         while x.left != self.nil:
             x = x.left
         return x
+
+    def maximum(self, x=None):
+        if x is None:
+            x = self.Root
+        while x.left != self.nil:
+            x = x.right
+        return x
+
+
 
     def delete_node(self, z):  # error than fix
         y = z
@@ -299,6 +326,32 @@ class UserRBtree(RBtree):
         RBtree.delete_fix_up(self, x)
 
     num_of_users = property(fget=lambda self: self._num_of_users)
+
+
+class FriendRBTree(RBtree):
+    def __init__(self):
+        RBtree.__init__(self)
+
+    def rearrange_by_friend(self, input_tree, tree, x=None):
+        if x is None:
+            x = input_tree.Root
+        if x != input_tree.nil:
+            a = FriendRBNode(x.num_of_friends, x.key, x.user_name)
+            tree.insert_node(a)
+            self.rearrange_by_friend(input_tree, tree, x.left)
+            self.rearrange_by_friend(input_tree, tree, x.right)
+        return tree
+
+    def counting(self, x=None):
+        count = 0
+        if x is None:
+            count = 0
+            x = self.Root
+        if x != self.nil:
+            count += x.key
+            self.counting(x.left)
+            self.counting(x.right)
+        return count
 
 
 class WordRBTree(RBtree):
@@ -410,11 +463,15 @@ Select Menu: """, end='')
             print("Total friendship records: ")
             print("Total tweets: %d" % word_tree.num_of_words)
         elif number == '1':
-            print("Average number of friends: ")
-            print("Minimum Friends: ")
-            print("Maximum number of friends: ")
+            alpha = FriendRBTree()
+            alpha = alpha.rearrange_by_friend(user_tree, alpha)
+            count = alpha.counting()
+            print("Average number of friends: %d" % count)
+            print("Minimum number of Friends: %d" % alpha.minimum().key)
+            print("Maximum number of friends: %d" % alpha.maximum().key)
             print()
-            print("Average tweets per user: %f" % (word_tree.num_of_words / user_tree.num_of_users))
+            print("Average tweets per user: %f"
+                  % (word_tree.num_of_words / user_tree.num_of_users))
             print("Minimum tweets per user: ")
             print("Maximum tweets per user: ")
         elif number == '2':
@@ -468,20 +525,15 @@ Select Menu: """, end='')
                 while del_node.user:
                     for person in del_node.user:
                         z = user_tree.search(person)  # z is a UserRBNode
-                        print(z.followers)
-                        print("----------------------")
                         while z.followers:
                             for i in z.followers:
-                                print("Hello")
                                 tr = user_tree.search(i)
                                 if tr is not user_tree.nil and tr is not None:
                                     tr.del_friend(z.key)
                                 z.del_follower(i)
-                                print(z.followers)
-                        print("----------------------")
 
                         for i in z.word:
-                            k = word_tree.search(i)  # find users who tweeted the words
+                            k = word_tree.search(i)
                             if z.key in k.user:
                                 word_tree.delete_node2(1)
                                 k.del_user(z.key)
@@ -498,11 +550,11 @@ Select Menu: """, end='')
             print("Total users: %d" % user_tree.num_of_users)
         elif number == '99':
             break
+
         elif number == '10':
             temp = user_tree.search(105063898)
-            for i in temp.friend:
+            for i in temp.friends:
                 print(i, end=' ')
-            print(temp.num_of_friends)
         else:
             print("Invalid input! Please re-enter")
 
