@@ -21,25 +21,32 @@ class UserRBNode(RBNode):
     def __init__(self, user_id, user_name=None):
         RBNode.__init__(self, user_id)
         self._user_name = user_name  # self.word = None => red black tree
-        self.friends = []  # friends will be saved in linked lists
+        self._friends = []  # friends will be saved in linked lists
+        self._followers = []  # followers
         self._word = []  # words will be linked lists
         self._num_of_friends = 0
 
     word = property(fget=lambda self: self._word)
     user_name = property(fget=lambda self: self._user_name)
     num_of_friends = property(fget=lambda self: self._num_of_friends)
+    followers = property(fget=lambda self: self._followers)
+    friend = property(fget=lambda  self: self._friends)
 
     def add_friend(self, friend):
-        self.friends.append(friend)
-        self._num_of_friends = len(self.friends)
+        self._friends.append(friend)
+        self._num_of_friends += 1
 
-    def print_friend(self):
-        print("Friends of %s : " % self.user_name, end=' ')
+    def del_friend(self, friend):
+        if friend in self._friends:
+            self._friends.remove(friend)
+            self._num_of_friends -= 1
 
-        for person in self.friends:
-            if person.user_name is not None:
-                print(person.user_name, end=" ")
-        print()
+    def add_follower(self, follower):  # might not be used
+        self._followers.append(follower)
+
+    def del_follower(self, follower):  # might not be used
+        if follower in self._followers:
+            self._followers.remove(follower)
 
     def add_word(self, input_word):
         self._word.append(input_word)
@@ -47,23 +54,30 @@ class UserRBNode(RBNode):
     def del_word(self, input_word):
         self._word.remove(input_word)
 
-    def print_word(self):
-        for i in self._word:
-            print(i, end=' ')
+    def num_of_tweets(self):
+        return len(self._word)
 
 
 class WordRBNode(RBNode):
+
     def __init__(self, word):
         RBNode.__init__(self, word)
         self._user = []
+        self._num_of_users = 0
 
     user = property(fget=lambda self: self._user)
+    num_of_users = property(fget=lambda self: self._num_of_users)
 
     def add_user(self, user_id):
+        self._num_of_users += 1
         self._user.append(user_id)
 
     def del_user(self, user_id):
+        self._num_of_users -= 1
         self._user.remove(user_id)
+
+    def temp_num_of_users(self):
+        return len(self._user)
 
 
 class RBtree:
@@ -284,9 +298,12 @@ class UserRBtree(RBtree):
 class WordRBTree(RBtree):
     def __init__(self):
         RBtree.__init__(self)
-        self.count = 0
+        self._num_of_words = 0
+
+    num_of_words = property(fget=lambda self: self._num_of_words)
 
     def word_insert_node(self, word, user_id):
+        self._num_of_words += 1
         if self.search(word) == self.nil:
             z = WordRBNode(word)
             self.insert_node(z)
@@ -294,6 +311,13 @@ class WordRBTree(RBtree):
         else:
             x = self.search(word)
             x.add_user(user_id)
+
+    def delete_node(self, z):
+        self._num_of_words -= z.num_of_users
+        RBtree.delete_node(self, z)
+
+    def delete_node2(self, users):
+        self._num_of_words -= users
 
 
 class ReadData:
@@ -328,7 +352,8 @@ class ReadData:
                 f.readline()
                 x = tree.search(personA)
                 y = tree.search(personB)
-                x.add_friend(y)
+                x.add_friend(personB)
+                y.add_follower(personA)
 
     @staticmethod
     def word(word_t, user_t):
@@ -371,22 +396,26 @@ def main():
 99. Quit
 Select Menu: """, end='')
 
-        number = int(input())
+        number = input()
         print()
 
-        if number == 0:
+        if number == '0':
             print("Total users: %d" % user_tree.num_of_users)
             print("Total friendship records: ")
-            print("Total tweets: ")
-        elif number == 1:
+            print("Total tweets: %d" % word_tree.num_of_words)
+        elif number == '1':
             print("Average number of friends: ")
             print("Minimum Friends: ")
             print("Maximum number of friends: ")
-        elif number == 2:
+            print()
+            print("Average tweets per user: %f" % (word_tree.num_of_words / user_tree.num_of_users))
+            print("Minimum tweets per user: ")
+            print("Maximum tweets per user: ")
+        elif number == '2':
             print("2")
-        elif number == 3:
+        elif number == '3':
             print("3")
-        elif number == 4:
+        elif number == '4':
             print("Who tweeted the input word? ", end='')
             sen = input()
             word_node = word_tree.search(sen)
@@ -398,7 +427,7 @@ Select Menu: """, end='')
                 print()
             else:
                 print("No one has tweeted the word!")
-        elif number == 5:
+        elif number == '5':
             if word_node is not word_tree.nil and word_node is not None:
                 temp = list(set(word_node.user))
                 for person in temp:
@@ -406,7 +435,7 @@ Select Menu: """, end='')
                     z.print_friend()
             else:
                 print("No one has tweeted the word!")
-        elif number == 6:
+        elif number == '6':
             print("Enter an input you want to delete: ", end='')
             input_word = input()
             del_node = word_tree.search(input_word)
@@ -416,9 +445,10 @@ Select Menu: """, end='')
                     z.del_word(input_word)
                 word_tree.delete_node(del_node)
                 word_node = None
+                print("Delete complete!")
             else:
                 print("Nothing to delete!")
-        elif number == 7:
+        elif number == '7':
             print("Enter an input to delete users who tweeted this word: ", end='')
             input_word = input()
             del_node = word_tree.search(input_word)
@@ -429,19 +459,30 @@ Select Menu: """, end='')
                         for i in z.word:
                             k = word_tree.search(i)
                             if z.key in k.user:
+                                word_tree.delete_node2(1)
                                 k.del_user(z.key)
                                 if not k.user:
                                     word_tree.delete_node(k)
+                        while z.followers:
+                            for follow in z.followers:
+                                k = user_tree.search(follow)
+                                k.del_friend(z.key)
+                                z.del_follower(follow)
                         user_tree.delete_node(z)
                 word_node = None
+                print("Delete complete!")
             else:
                 print("Nothing to delete!")
-        elif number == 8:
+        elif number == '8':
             print("8")
-        elif number == 9:
+        elif number == '9':
             print("Total users: %d" % user_tree.num_of_users)
-        elif number == 99:
+        elif number == '99':
             break
+        elif number == '10':
+            temp = user_tree.search(105063898)
+            for i in temp.friend:
+                print(i, end=' ')
         else:
             print("Invalid input! Please re-enter")
 
