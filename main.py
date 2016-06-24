@@ -128,13 +128,14 @@ class DepthFirstSearch:
         self.time += 1
         u.f = self.time
 
-    def print_scc(self, u):
-        print(u.name, end=" ")
+    def print_scc(self, u, tree):
+        x = tree.search(u.name)
+        print(x.user_name, end=" ")
         vset = self.vertices
         if u.parent >= 0:
-            self.print_scc(vset[u.parent])
+            self.print_scc(vset[u.parent], tree)
 
-    def scc_find(self, u):
+    def scc_find(self, u, tree):
         u.color = GRAY
         v = u.first
         found = False
@@ -142,11 +143,11 @@ class DepthFirstSearch:
             if self.vertices[v.n].color == WHITE:
                 found = True
                 self.vertices[v.n].parent = u.n
-                self.scc_find(self.vertices[v.n])
+                self.scc_find(self.vertices[v.n], tree)
             v = v.next
         if not found:
             print("SCC:", end=" ")
-            self.print_scc(u)
+            self.print_scc(u, tree)
             print("")
         u.color = BLACK
 
@@ -211,7 +212,7 @@ class DepthFirstSearch:
         self.heapsort(sorted_indices)
         return sorted_indices
 
-    def scc(self):
+    def scc(self, tree):
         self.dfs()
         #self.print_vertices()
         self.transpose()
@@ -222,7 +223,7 @@ class DepthFirstSearch:
             v.parent = -1
         for n in sorted:
             if self.vertices[n].color == WHITE:
-                self.scc_find(vset[n])
+                self.scc_find(vset[n], tree)
 
 
 class RBNode:
@@ -937,7 +938,7 @@ Select Menu: """, end='')
                     dfs_ver[i].add(a)
 
             print("-------- Strongly Connected Components -------")
-            DFS.scc()
+            DFS.scc(user_tree)
 
         elif number == '9':
             print("Total users: %d" % user_tree.num_of_users)
