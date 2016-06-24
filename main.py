@@ -1,6 +1,7 @@
 count_user = 0
 count_word = 0
 
+
 class RBNode:
     def __init__(self, key):
         self._key = key
@@ -539,7 +540,7 @@ class ReadData:
 
     @staticmethod
     def word(word_t, user_t):
-        with open('word.txt') as f:
+        with open('/Users/yeongjin/Downloads/utf-8 2/word.txt') as f:
             while True:
                 person = f.readline()
                 person = person[0:-1]
@@ -579,40 +580,42 @@ def main():
         print(""" from a given user
 99. Quit
 Select Menu: """, end='')
-        # friend number in red black tree
-        alpha = FriendRBTree()
-        alpha = alpha.rearrange_by_friend(user_tree, alpha)
-        count = alpha.counting()
         number = input()
         print()
 
-        beta = UserWordRBTree()
-        beta = beta.rearrange_by_friend(user_tree, beta)
+        if number == '0' or number == '1' or number == '2' or number == '3':
+            alpha = FriendRBTree()
+            alpha = alpha.rearrange_by_friend(user_tree, alpha)
+            count = alpha.counting()
 
-        gamma = WordArrangedRBTREE()
-        gamma = gamma.rearrange_by_friend(word_tree, gamma)
+            # num of words a user tweeted
+            beta = UserWordRBTree()
+            beta = beta.rearrange_by_friend(user_tree, beta)
 
-        if number == '0':
-            print("Total users: %d" % user_tree.num_of_users)
-            print("Total friendship records: %d" % count)
-            print("Total tweets: %d" % word_tree.num_of_words)
-        elif number == '1':
-            print("Average number of friends: %f" % (count / user_tree.num_of_users))
-            print("Minimum number of Friends: %d" % alpha.minimum().key)
-            print("Maximum number of friends: %d" % alpha.maximum().key)
-            print()
-            print("Average tweets per user: %f"
-                  % (word_tree.num_of_words / user_tree.num_of_users))
-            print("Minimum tweets per user: %d" % beta.minimum().key)
-            print("Maximum tweets per user: %d" % beta.maximum().key)
-        elif number == '2':
-            print("Top 5 most tweeted words: ")
-            count_word = 0
-            gamma.top_five_words()
-        elif number == '3':
-            print("Top 5 most tweeted users: ")
-            count_user = 0
-            beta.top_five_users()
+            # num of users a word has
+            gamma = WordArrangedRBTREE()
+            gamma = gamma.rearrange_by_friend(word_tree, gamma)
+            if number == '0':
+                print("Total users: %d" % user_tree.num_of_users)
+                print("Total friendship records: %d" % count)
+                print("Total tweets: %d" % word_tree.num_of_words)
+            elif number == '1':
+                print("Average number of friends: %f" % (count / user_tree.num_of_users))
+                print("Minimum number of Friends: %d" % alpha.minimum().key)
+                print("Maximum number of friends: %d" % alpha.maximum().key)
+                print()
+                print("Average tweets per user: %f"
+                      % (word_tree.num_of_words / user_tree.num_of_users))
+                print("Minimum tweets per user: %d" % beta.minimum().key)
+                print("Maximum tweets per user: %d" % beta.maximum().key)
+            elif number == '2':
+                print("Top 5 most tweeted words: ")
+                count_word = 0
+                gamma.top_five_words()
+            elif number == '3':
+                print("Top 5 most tweeted users: ")
+                count_user = 0
+                beta.top_five_users()
         elif number == '4':
             print("Who tweeted the input word? ", end='')
             sen = input()
@@ -685,11 +688,6 @@ Select Menu: """, end='')
             print("Total users: %d" % user_tree.num_of_users)
         elif number == '99':
             break
-
-        elif number == '10':
-            temp = user_tree.search(105063898)
-            for i in temp.friends:
-                print(i, end=' ')
         else:
             print("Invalid input! Please re-enter")
 
