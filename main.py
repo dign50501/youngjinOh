@@ -1,3 +1,6 @@
+count_user = 0
+count_word = 0
+
 class RBNode:
     def __init__(self, key):
         self._key = key
@@ -25,12 +28,14 @@ class UserRBNode(RBNode):
         self._followers = []  # followers
         self._word = []  # words will be linked lists
         self._num_of_friends = 0
+        self._num_of_words = 0
 
     word = property(fget=lambda self: self._word)
+    num_of_words = property(fget=lambda self: self._num_of_words)
     user_name = property(fget=lambda self: self._user_name)
     num_of_friends = property(fget=lambda self: self._num_of_friends)
     followers = property(fget=lambda self: self._followers)
-    friends = property(fget=lambda  self: self._friends)
+    friends = property(fget=lambda self: self._friends)
 
     def add_friend(self, friend):
         self._friends.append(friend)
@@ -56,12 +61,11 @@ class UserRBNode(RBNode):
 
     def add_word(self, input_word):
         self._word.append(input_word)
+        self._num_of_words = len(self._word)
 
     def del_word(self, input_word):
         self._word.remove(input_word)
-
-    def num_of_tweets(self):
-        return len(self._word)
+        self._num_of_words = len(self._word)
 
 
 class FriendRBNode(RBNode):
@@ -69,6 +73,18 @@ class FriendRBNode(RBNode):
         RBNode.__init__(self, num_of_friends)
         self._user_id = user_id
         self._user_name = user_name
+
+    user_name = property(fget=lambda self: self._user_name)
+    user_id = property(fget=lambda self: self._user_id)
+
+
+# for users who have the most tweets
+class UserWordRBNode(RBNode):
+    def __init__(self, num_of_words, user_id, user_name):
+        RBNode.__init__(self, num_of_words)
+        self._user_id = user_id
+        self._user_name = user_name
+        self.visited = False
 
     user_name = property(fget=lambda self: self._user_name)
     user_id = property(fget=lambda self: self._user_id)
@@ -94,6 +110,15 @@ class WordRBNode(RBNode):
 
     def temp_num_of_users(self):
         return len(self._user)
+
+
+class WordArrangedRBNode(RBNode):
+    def __init__(self, num_of_users, word):
+        RBNode.__init__(self, num_of_users)
+        self._word = word
+        self.visited = False
+
+    word = property(fget=lambda self: self._word)
 
 
 class RBtree:
@@ -328,6 +353,7 @@ class UserRBtree(RBtree):
     num_of_users = property(fget=lambda self: self._num_of_users)
 
 
+# arranged by number of friends
 class FriendRBTree(RBtree):
     def __init__(self):
         RBtree.__init__(self)
@@ -351,6 +377,104 @@ class FriendRBTree(RBtree):
         return count
 
 
+# arranged by number of users in a word
+class WordArrangedRBTREE(RBtree):
+    def __init__(self):
+        RBtree.__init__(self)
+
+    def rearrange_by_friend(self, input_tree, tree, x=None):
+        if x is None:
+            x = input_tree.Root
+        if x != input_tree.nil:
+            a = WordArrangedRBNode(x.num_of_users, x.key)
+            tree.insert_node(a)
+            self.rearrange_by_friend(input_tree, tree, x.left)
+            self.rearrange_by_friend(input_tree, tree, x.right)
+        return tree
+
+    def backward(self, x=None):
+        if x is None:
+            x = self.Root
+        if x != self.nil:
+            self.backward(x.right)
+            print(x.word, end=' : ')
+            print(x.key, end=' tweets')
+            print()
+            self.backward(x.left)
+
+    def top_five_words(self, x=None):
+        global count_word
+        if x is None:
+            x = self.Root
+        if x != self.nil:
+            self.top_five_words(x.right)
+            if not x.visited and count_word < 5:
+                count_word += 1
+                x.visited = True
+                print(count_word, end ='. ')
+                print(x.word, end=' : ')
+                print(x.key, end=' tweets')
+
+                print()
+                self.top_five_words(x.left)
+
+
+# arranged by number of tweets
+class UserWordRBTree(RBtree):
+    def __init__(self):
+        RBtree.__init__(self)
+
+    def rearrange_by_friend(self, input_tree, tree, x=None):
+        if x is None:
+            x = input_tree.Root
+        if x != input_tree.nil:
+            a = UserWordRBNode(x.num_of_words, x.key, x.user_name)
+            tree.insert_node(a)
+            self.rearrange_by_friend(input_tree, tree, x.left)
+            self.rearrange_by_friend(input_tree, tree, x.right)
+        return tree
+
+    def count_all(self, x=None):  # not used because there is a faster one
+        count = 0
+        if x is None:
+            x = self.Root
+        if x != self.nil:
+            count = x.key + self.count_all(x.left) + self.count_all(x.right)
+        return count
+
+    def count_node(self, x=None):  # not used because there exists a faster one
+        count = 0
+        if x is None:
+            x = self.Root
+        if x != self.nil:
+            count = 1 + self.count_node(x.left) + self.count_node(x.right)
+        return count
+
+    def backward(self, x=None):
+        if x is None:
+            x = self.Root
+        if x != self.nil:
+            self.backward(x.right)
+            print(x.user_name, end=' : ')
+            print(x.key, end=' tweets')
+            print()
+            self.backward(x.left)
+
+    def top_five_users(self, x=None):
+        global count_user
+        if x is None:
+            x = self.Root
+        if x != self.nil:
+            self.top_five_users(x.right)
+            if not x.visited and count_user < 5:
+                count_user += 1
+                x.visited = True
+                print(count_user, end ='. ')
+                print(x.user_name, end=' : ')
+                print(x.key, end=' tweets')
+
+                print()
+                self.top_five_users(x.left)
 
 
 class WordRBTree(RBtree):
@@ -432,6 +556,8 @@ class ReadData:
 
 
 def main():
+    global count_user
+    global count_word
     user_tree = UserRBtree()
     word_tree = WordRBTree()
     word_node = None
@@ -453,31 +579,40 @@ def main():
         print(""" from a given user
 99. Quit
 Select Menu: """, end='')
-        # friend number in red blakc tree
+        # friend number in red black tree
         alpha = FriendRBTree()
         alpha = alpha.rearrange_by_friend(user_tree, alpha)
         count = alpha.counting()
         number = input()
         print()
 
+        beta = UserWordRBTree()
+        beta = beta.rearrange_by_friend(user_tree, beta)
+
+        gamma = WordArrangedRBTREE()
+        gamma = gamma.rearrange_by_friend(word_tree, gamma)
+
         if number == '0':
             print("Total users: %d" % user_tree.num_of_users)
             print("Total friendship records: %d" % count)
             print("Total tweets: %d" % word_tree.num_of_words)
         elif number == '1':
-
             print("Average number of friends: %f" % (count / user_tree.num_of_users))
             print("Minimum number of Friends: %d" % alpha.minimum().key)
             print("Maximum number of friends: %d" % alpha.maximum().key)
             print()
             print("Average tweets per user: %f"
                   % (word_tree.num_of_words / user_tree.num_of_users))
-            print("Minimum tweets per user: ")
-            print("Maximum tweets per user: ")
+            print("Minimum tweets per user: %d" % beta.minimum().key)
+            print("Maximum tweets per user: %d" % beta.maximum().key)
         elif number == '2':
-            print("2")
+            print("Top 5 most tweeted words: ")
+            count_word = 0
+            gamma.top_five_words()
         elif number == '3':
-            print("3")
+            print("Top 5 most tweeted users: ")
+            count_user = 0
+            beta.top_five_users()
         elif number == '4':
             print("Who tweeted the input word? ", end='')
             sen = input()
