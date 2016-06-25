@@ -11,6 +11,7 @@ Used Pycharm 5.0.4 on Mac X El Captain 10.11.5
 Manual
 
 Enter a number to see the menu you want.
+
   When you enter the number 0, Total users, Total friendship records, and tweets are displayed.
   
   When you enter the number 1, average number of friends, minimum friends, maximum number of friends, 
