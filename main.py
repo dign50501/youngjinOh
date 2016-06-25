@@ -945,6 +945,25 @@ class UserWordRBTree(RBtree):
                 print()
                 self.top_five_users(x.left)
 
+    def top_five_users_friend(self, tree, x=None):
+        global count_user
+        if x is None:
+            x = self.Root
+        if x != self.nil:
+            self.top_five_users_friend(tree, x.right)
+            if not x.visited and count_user < 5:
+                count_user += 1
+                x.visited = True
+                print("Friend of ", end='')
+                print(x.user_name, end=' : ')
+                alpha = tree.search(x.user_id)
+                for friend in alpha.friends:
+                    k = tree.search(friend)
+                    print(k.user_name, end=' ')
+
+                print()
+                self.top_five_users_friend(tree, x.left)
+
 
 class WordRBTree(RBtree):
     def __init__(self):
@@ -1084,19 +1103,27 @@ Select Menu: """, end='')
                 print("Top 5 most tweeted users: ")
                 count_user = 0
                 beta.top_five_users()
+
         elif number == '4':
-            print("Who tweeted the input word? ", end='')
-            sen = input()
-            word_node = word_tree.search(sen)
-            if word_node is not word_tree.nil and word_node is not None:
-                print("People who tweeted: ", end='')
-                for person in word_node.user:
-                    x = user_tree.search(person)
-                    print(x.user_name, end=' ')
-                print()
-            else:
-                print("No one has tweeted the word!")
+                print("Who tweeted the input word? ", end='')
+                sen = input()
+                word_node = word_tree.search(sen)
+                if word_node is not word_tree.nil and word_node is not None:
+                    print("People who tweeted: ", end='')
+                    for person in word_node.user:
+                        x = user_tree.search(person)
+                        print(x.user_name, end=' ')
+                    print()
+                else:
+                    print("No one has tweeted the word!")
         elif number == '5':
+            beta = UserWordRBTree()
+            beta = beta.rearrange_by_friend(user_tree, beta)
+
+            print("-------Friends of the Top 5 users-------")
+            beta.top_five_users_friend(user_tree)
+            print()
+
             if word_node is not word_tree.nil and word_node is not None:
                 temp = list(set(word_node.user))
                 for person in temp:
