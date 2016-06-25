@@ -953,14 +953,13 @@ class UserWordRBTree(RBtree):
             self.top_five_users_friend(tree, x.right)
             if not x.visited and count_user < 5:
                 count_user += 1
-                x.visited = True
+               # x.visited = True
                 print("Friend of ", end='')
                 print(x.user_name, end=' : ')
                 alpha = tree.search(x.user_id)
                 for friend in alpha.friends:
                     k = tree.search(friend)
                     print(k.user_name, end=' ')
-
                 print()
                 self.top_five_users_friend(tree, x.left)
 
@@ -1117,6 +1116,7 @@ Select Menu: """, end='')
                 else:
                     print("No one has tweeted the word!")
         elif number == '5':
+            count_user = 0
             beta = UserWordRBTree()
             beta = beta.rearrange_by_friend(user_tree, beta)
 
@@ -1124,6 +1124,7 @@ Select Menu: """, end='')
             beta.top_five_users_friend(user_tree)
             print()
 
+            print("------Friends of the people who tweeted above word------")
             if word_node is not word_tree.nil and word_node is not None:
                 temp = list(set(word_node.user))
                 for person in temp:
