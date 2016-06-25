@@ -32,3 +32,7 @@ Enter a number to see the menu you want.
   When you enter the number 8, you can find strongly connected components
   
   When you enter the number 9, you have to enter an input of user id then you can see the shortest path from the user you entered.
+  
+  -------------
+  The IDE I used got some problem so when i read the data with
+   with open('user.txt', encoding='utf8') as f: # include encouding='utf8'
